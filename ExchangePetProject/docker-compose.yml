@@ -23,3 +23,11 @@ services:
     build: ./fake-data-producer
     depends_on:
       - kafka
+
+  exchange-data-consumer:
+    build:
+      context: ./ExchangeDataConsumer
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    restart: always
