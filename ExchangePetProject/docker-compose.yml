@@ -31,3 +31,43 @@ services:
     depends_on:
       - kafka
     restart: always
+
+  # ai-assistent:
+  #   image: ai/deepseek-r1-distill-llama:8B-Q4_0
+  #   ports:
+  #     - "8087:8087"
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=lambda,dynamodb
+      - LAMBDA_EXECUTOR=docker-reuse
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEBUG=1
+      - LOCALSTACK_TMPDIR=/var/tmp/localstack-tmp
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - localstack_data:/var/lib/localstack
+
+  deployer:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    depends_on:
+      - localstack
+    volumes:
+      - ./USDHandlerFunction:/app/lambda
+    environment:
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_DEFAULT_REGION=us-east-1
+    command: ["/app/deploy.sh"]
+
+volumes:
+  localstack_data:

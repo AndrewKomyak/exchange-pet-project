@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# Install Amazon Lambda .NET tools
+RUN dotnet tool install -g Amazon.Lambda.Tools \
+    && export PATH="$PATH:/root/.dotnet/tools"
+
+# Set the PATH for future RUNs
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+WORKDIR /app
+
+# Install AWS CLI
+RUN apt-get update && apt-get install -y unzip curl awscli zip
+
+COPY deploy.sh /app/deploy.sh
+RUN chmod +x /app/deploy.sh
